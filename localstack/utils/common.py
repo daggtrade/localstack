@@ -855,7 +855,7 @@ def port_can_be_bound(port):
         return False
 
 
-def get_free_tcp_port(blacklist=None):
+def get_free_tcp_port(blacklist: Optional[List[int]] = None) -> int:
     blacklist = blacklist or []
     for i in range(10):
         tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
