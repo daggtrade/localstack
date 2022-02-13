@@ -39,13 +39,15 @@ def cloudwatch():
     from localstack.services.cloudwatch import cloudwatch_listener, cloudwatch_starter
     from localstack.services.cloudwatch.provider import CloudwatchProvider
 
+    provider = CloudwatchProvider()
     asf_listener = AsfWithFallbackListener(
-        "cloudwatch", CloudwatchProvider(), cloudwatch_listener.UPDATE_CLOUD_WATCH
+        "cloudwatch", provider, cloudwatch_listener.UPDATE_CLOUD_WATCH
     )
     return Service(
         "cloudwatch",
         listener=asf_listener,
         start=cloudwatch_starter.start_cloudwatch,
+        lifecycle_hook=provider,
     )
 
 

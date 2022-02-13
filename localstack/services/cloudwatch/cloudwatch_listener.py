@@ -15,23 +15,9 @@ TAGS = TaggingService()
 
 class ProxyListenerCloudWatch(ProxyListener):
     def forward_request(self, method, path, data, headers):
-        if path.startswith(PATH_GET_RAW_METRICS):
-            result = cloudwatch_backends[aws_stack.get_region()].metric_data
-            result = [
-                {
-                    "ns": r.namespace,
-                    "n": r.name,
-                    "v": r.value,
-                    "t": r.timestamp,
-                    "d": [{"n": d.name, "v": d.value} for d in r.dimensions],
-                }
-                for r in result
-            ]
-            return {"metrics": result}
         return True
 
     def return_response(self, method, path, data, headers, response):
-
         req_data = parse_request_data(method, path, data)
         action = req_data.get("Action")
         if action == "PutMetricAlarm":
