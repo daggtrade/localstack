@@ -1,4 +1,6 @@
-from localstack.aws.api import RequestContext
+from moto.cloudwatch import cloudwatch_backends
+
+from localstack.aws.api import HttpRequest, HttpResponse, RequestContext
 from localstack.aws.api.cloudwatch import (
     AmazonResourceName,
     CloudwatchApi,
@@ -9,9 +11,25 @@ from localstack.aws.api.cloudwatch import (
     UntagResourceOutput,
 )
 from localstack.services.cloudwatch.cloudwatch_listener import TAGS
+from localstack.utils.aws import aws_stack
 
 
 class CloudwatchProvider(CloudwatchApi):
+    def get_raw_metrics(self, request: HttpRequest, response: HttpResponse):
+        region = aws_stack.extract_region_from_auth_header(request.headers)
+        result = cloudwatch_backends[region].metric_data
+        result = [
+            {
+                "ns": r.namespace,
+                "n": r.name,
+                "v": r.value,
+                "t": r.timestamp,
+                "d": [{"n": d.name, "v": d.value} for d in r.dimensions],
+            }
+            for r in result
+        ]
+        response.set_json({"metrics": result})
+
     def list_tags_for_resource(
         self, context: RequestContext, resource_arn: AmazonResourceName
     ) -> ListTagsForResourceOutput:
